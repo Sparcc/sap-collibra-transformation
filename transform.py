@@ -1,41 +1,21 @@
 from openpyxl import load_workbook
 
-class Column:
-    name = ''
-    table = ''
-    
-class Table:
-    name = ''
-    infoArea = ''
-    tabletType = ''
-    isNullable = ''
-    description = ''
-    isPrimaryKey = ''
-    numFracDigs = ''
-    size = ''
-    colPos = ''
-    techDataType = ''
-    isCapturedIn = '' #can be blank
-    
-class InfoArea:
-    childInfoArea = ''
-    name = ''
-    child = ''
-    table = ''
-    def __init__(self,name='',child=''):
-        self.childInfoArea = childInfoArea
-
 class SapDataParser:
     #TODO calculate this
     uppperRange = 0
     currentParentInfoArea = ''
     currentChildInfoArea = ''
     currentTable = ''
+    outputRowNum = 0
+    
+    domain = 'SAFYR SAP Test'
+    community = 'Technical Metadata Community'
+    domainType = 'Physical Data Dictionary'
     def __init__(self,fName):
         self.wb = load_workbook(filename = fName)
         self.ws = self.wb.active
         self.output = load_workbook(filename = fName)
-        self.outputSheet = self.output.active
+        self.sOutput = self.output.active
         self.buildFieldMap()
         self.createNewRow(1)
     def setDataLength(self, upperRange = 49646):
@@ -62,80 +42,19 @@ class SapDataParser:
         ts = tb.active
         self.fieldTemp={}
         for col in ts.iter_cols():
-            self.fieldTemp[col[0].column] = col[0].value]
+            self.fieldTemp[col[0].column] = col[0].value
             #print(self.fieldTemp[col[0].column])
-        '''
-        self.fieldTemp={}
-        self.fieldTemp['Name'] = ['A'
-        self.fieldTemp['Status'] = 'B'
-        self.fieldTemp['Type'] = 'C'
-        self.fieldTemp['Domain'] = 'D'
-        self.fieldTemp['Community'] = 'E'
-        self.fieldTemp['Domain Type'] = 'F'
-        self.fieldTemp[''] =
-        self.fieldTemp['Table Type'] = 'G'
-        self.fieldTemp['Is Nullable'] = 'H'
-        self.fieldTemp['Description'] = 'I'
-        self.fieldTemp['Is Primary Key'] = 'J'
-        self.fieldTemp['Number of Fractional Digits'] = 'K'
-        self.fieldTemp['Size'] = 'L'
-        self.fieldTemp['Column Position'] = 'M'
-        self.fieldTemp['Technical Data Type'] = 'N'
-        self.fieldTemp['is a child of [Info Area] > Info Area'] = 'O'
-        self.fieldTemp['is a child of [Info Area] > Type'] = 'P'
-        self.fieldTemp[''] = 'Q'
-        self.fieldTemp[''] = 'R'
-        self.fieldTemp[''] = 'S'
-        self.fieldTemp[''] = ''
-        self.fieldTemp[''] = 'T'
-        self.fieldTemp[''] = 'U'
-        self.fieldTemp[''] = 'V'
-        self.fieldTemp[''] = 'W'
-        self.fieldTemp[''] = 'X'
-        self.fieldTemp[''] = ''
-        self.fieldTemp[''] = ''
-        self.fieldTemp[''] = ''
-        self.fieldTemp[''] = ''
-        self.fieldTemp[''] = ''
-        self.fieldTemp[''] = ''
-        self.fieldTemp[''] = ''
-        self.fieldTemp[''] = ''
-        self.fieldTemp[''] = ''
-        self.fieldTemp[''] = ''
-        
-        self.template['Table Type'] = 'G'
-        self.template['Is Nullable'] = 'H'
-        self.template['Description'] = 
-        
-        self.mapping={}
-        self.mapping['schema'] = ['R','G']
-        self.mapping['size'] = ['P','H']
-        self.mapping['nullable'] = ['M','I']
-        self.mapping['col_pos_id'] = ['F','J']
-        self.mapping['frac_digs'] = ['O','K']
-        self.mapping['default_value'] = ['I','L']
-        self.mapping['desc'] = ['E','M']
-        self.mapping['pk'] = ['N','N']
-        '''
-        '''
-        self.template = {
-                'Name':'A',
-                'Status':'B',
-                'Type':'C',
-                'Domain':'D',
-                'Community':'E',
-                'Domain Type':'F'
-                }
-        '''
+            
     def start(self, startingRow = 2):
         rowNum = startingRow
         while rowNum < numRows:
             self.processRow(rowNum)
             rowNum+=1
+            
     def processRow(self,rowNum):
-        #logic
-        buildTable = False
-        data = self.ws[fieldSrc['Parent']+str(rowNum)]
+        '''
+        #check for change in info area
+        data = self.ws[fieldSrc['Parent']+str(rowNum)].value
         if data != self.currentParentInfoArea and data != '':
             parentInfoArea = InfoArea()
             parentInfoArea.name = data # assign name
@@ -145,20 +64,67 @@ class SapDataParser:
             childInfoArea = InfoArea()
             childInfoArea.name = name
             #TODO: create new row for child info area
-        else:
-            pa
-        if self.ws[fieldSrc['Table']+str(rowNum)] !=self.currentTable:
-           table = Table()
-           #TODO: create new row for table
+        '''
+        #check for change in table
+        data = self.ws[fieldSrc['DD_TABLENAME']+str(rowNum)].value
+        if data !=self.currentTable:
+            self.currentTable = data
+            self.createNewTable(rowNum)
            
-    def createNewRow(self,rowNum):
-    
-                
-    def createNewInfoArea(self,rowNum):
-    
-    def createNewColumn(self,rowNum)
-        #self.outputSheet[
+        #build columns
+        self.createNewColumn(rowNum)
+
+           
+    def createNewTable(self,rowNum, hasInfoArea = False):
+        self.sOutput[fieldTemp['Name']+str(self.outputRowNum)] = self.ws[self.fieldSrc['DD_TABLENAME']+str(rowNum)]
+        self.sOutput[fieldTemp['Status']+str(self.outputRowNum)] = 'Candidate'
+        self.sOutput[fieldTemp['Type']+str(self.outputRowNum)] = 'Table'
+        self.sOutput[fieldTemp['Domain']+str(self.outputRowNum)] = self.domain
+        self.sOutput[fieldTemp['Community']+str(self.outputRowNum)] = self.domain
+        self.sOutput[fieldTemp['Domain Type']+str(self.outputRowNum)] = self.domainType
         
+        self.sOutput[fieldTemp['TableType']+str(self.outputRowNum)] = 'Table'
+        self.sOutput[fieldTemp['Description']+str(self.outputRowNum)] = self.ws[self.fieldSrc['DD_FIELDNAME']+str(rowNum)]
+        
+        #relation (sometimes has no info area)
+        if hasInfoArea:
+            self.sOutput[fieldTemp['is captured in [Info Area] > Info Area']+str(self.outputRowNum)] = self.ws[self.fieldSrc['Parent']+str(rowNum)]
+            self.sOutput[fieldTemp['is captured in [Info Area] > Type']+str(self.outputRowNum)] = 'Info Area'
+            self.sOutput[fieldTemp['is captured in [Info Area] > Community']+str(self.outputRowNum)] = self.community
+            self.sOutput[fieldTemp['is captured in [Info Area] > Domain Type']+str(self.outputRowNum)] = self.domainType
+            self.sOutput[fieldTemp['is captured in [Info Area] > Domain']+str(self.outputRowNum)] = self.domain
+        
+        self.outputRowNum +=1
+     
+    def createNewColumn(self,rowNum):
+        self.sOutput[fieldTemp['Name']+str(self.outputRowNum)] = self.ws[self.fieldSrc['DD_FIELDNAME']+str(rowNum)]
+        self.sOutput[fieldTemp['Status']+str(self.outputRowNum)] = 'Candidate'
+        self.sOutput[fieldTemp['Type']+str(self.outputRowNum)] = 'Column'
+        self.sOutput[fieldTemp['Domain']+str(self.outputRowNum)] = self.domain
+        self.sOutput[fieldTemp['Community']+str(self.outputRowNum)] = self.domain
+        self.sOutput[fieldTemp['Domain Type']+str(self.outputRowNum)] = self.domainType
+        
+        #attributes
+        self.sOutput[fieldTemp['Is Nullable']+str(self.outputRowNum)] = self.ws[self.fieldSrc['MANDATORY']+str(rowNum)]
+        self.sOutput[fieldTemp['Description']+str(self.outputRowNum)] = self.ws[self.fieldSrc['LONG_DESC']+str(rowNum)]
+        self.sOutput[fieldTemp['Is Primary Key']+str(self.outputRowNum)] = self.ws[self.fieldSrc['KEY_FLAG']+str(rowNum)]
+        self.sOutput[fieldTemp['Number of Fractional Digits']+str(self.outputRowNum)] = self.ws[self.fieldSrc['DATA_DECIMALS']+str(rowNum)]
+        self.sOutput[fieldTemp['Size']+str(self.outputRowNum)] = self.ws[self.fieldSrc['DATA_LENGTH']+str(rowNum)]
+        self.sOutput[fieldTemp['Column Position']+str(self.outputRowNum)] = self.ws[self.fieldSrc['POSIT']+str(rowNum)]
+        self.sOutput[fieldTemp['Technical Data Type']+str(self.outputRowNum)] = self.ws[self.fieldSrc['DD_DATATYPE_ERP']+str(rowNum)]
+        
+        #relation
+        self.sOutput[fieldTemp['is part of [Table] > Table']+str(self.outputRowNum)] = self.ws[self.fieldSrc['DD_TABLENAME']+str(rowNum)]
+        self.sOutput[fieldTemp['is part of [Table] > Type']+str(self.outputRowNum)] = 'Table'
+        self.sOutput[fieldTemp['is part of [Table] > Community']+str(self.outputRowNum)] = self.community
+        self.sOutput[fieldTemp['is part of [Table] > Domain Type']+str(self.outputRowNum)] = self.domainType
+        self.sOutput[fieldTemp['is part of [Table] > Domain']+str(self.outputRowNum)] = self.domain
+            
+        self.outputRowNum +=1
+
+    def createNewInfoArea(self,rowNum, child = False):
+        if child:
+            print('do stuff')
     def convertToCommonTerm(self,v):
         v = str(v)
         returnValue = v
