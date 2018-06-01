@@ -9,6 +9,7 @@ class SapDataParser:
     sourceFileName = ''
     outputFileName = 'output.xlsx'
     hasInfoArea = False
+    hasTable = False
     
     domain = 'SAFYR SAP Test'
     community = 'Technical Metadata Community'
@@ -75,7 +76,7 @@ class SapDataParser:
         #check for change in info area
         data = self.ws[self.fieldSrc['Child']+str(rowNum)].value
         if data == '': #initial state
-            hasInfoArea = False
+            self.hasInfoArea = False
         elif data != self.currentInfoArea: #not equal to current info area, change detected
             self.currentInfoArea = data
             self.createNewInfoArea(rowNum)
@@ -87,18 +88,20 @@ class SapDataParser:
         data = self.ws[self.fieldSrc['DD_TABLENAME']+str(rowNum)].value
         #print(self.ws[self.fieldSrc['DD_TABLENAME']+str(rowNum)])
         #print('DATA = {d}'.format(d=data))
+        if data == '':
+            self.hasTable = False
         if data !=self.currentTable: #mismatch detected
             #print('creating new table:{d}'.format(d=data))
             self.currentTable = data
             self.createNewTable(rowNum)
-           
+        
         #build columns
         if data != '': #there is no table to put columns in
             self.createNewColumn(rowNum)
 
            
     def createNewTable(self,rowNum):
-        
+        self.hasTable = True
         #'''
         self.sOutput[self.fieldTemp['Name']+str(self.outputRowNum)] = self.ws[self.fieldSrc['DD_TABLENAME']+str(rowNum)].value
         self.sOutput[self.fieldTemp['Status']+str(self.outputRowNum)] = 'Candidate'
@@ -112,7 +115,7 @@ class SapDataParser:
         
         #relation (sometimes has no info area)
         if self.hasInfoArea:
-            self.sOutput[self.fieldTemp['is captured in [Info Area] > Info Area']+str(self.outputRowNum)] = self.ws[self.fieldSrc['Parent']+str(rowNum)].value
+            self.sOutput[self.fieldTemp['is captured in [Info Area] > Info Area']+str(self.outputRowNum)] = self.ws[self.fieldSrc['Child']+str(rowNum)].value
             self.sOutput[self.fieldTemp['is captured in [Info Area] > Type']+str(self.outputRowNum)] = 'Info Area'
             self.sOutput[self.fieldTemp['is captured in [Info Area] > Community']+str(self.outputRowNum)] = self.community
             self.sOutput[self.fieldTemp['is captured in [Info Area] > Domain Type']+str(self.outputRowNum)] = self.domainType
@@ -164,11 +167,15 @@ class SapDataParser:
             self.sOutput[self.fieldTemp['is a child of [Info Area] > Domain']+str(self.outputRowNum)] = self.domain
             
             #relation to table
-            self.sOutput[self.fieldTemp['captures [Table] > Table']+str(self.outputRowNum)] = self.ws[self.fieldSrc['DD_TABLETYPE']+str(rowNum)].value
-            self.sOutput[self.fieldTemp['captures [Table] > Type']+str(self.outputRowNum)] = 'Table'
-            self.sOutput[self.fieldTemp['captures [Table] > Community']+str(self.outputRowNum)] = self.community
-            self.sOutput[self.fieldTemp['captures [Table] > Domain Type']+str(self.outputRowNum)] = self.domainType
-            self.sOutput[self.fieldTemp['captures [Table] > Domain']+str(self.outputRowNum)] = self.domain
+            data = self.sOutput[self.fieldTemp['captures [Table] > Table']+str(self.outputRowNum)]
+            if data != '':
+                self.sOutput[self.fieldTemp['captures [Table] > Table']+str(self.outputRowNum)] = self.ws[self.fieldSrc['DD_TABLETYPE']+str(rowNum)].value
+                self.sOutput[self.fieldTemp['captures [Table] > Type']+str(self.outputRowNum)] = 'Table'
+                self.sOutput[self.fieldTemp['captures [Table] > Community']+str(self.outputRowNum)] = self.community
+                self.sOutput[self.fieldTemp['captures [Table] > Domain Type']+str(self.outputRowNum)] = self.domainType
+                self.sOutput[self.fieldTemp['captures [Table] > Domain']+str(self.outputRowNum)] = self.domain
+            else:
+                self.has
         else:
             self.sOutput[self.fieldTemp['Name']+str(self.outputRowNum)] = self.ws[self.fieldSrc['Parent']+str(rowNum)].value
         self.outputRowNum +=1
