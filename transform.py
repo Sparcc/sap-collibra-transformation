@@ -140,7 +140,7 @@ class SapDataParser:
         
         #attributes
         self.sOutput[self.fieldTemp['Is Nullable']+str(self.outputRowNum)] = self.convertToCommonTerm(self.ws[self.fieldSrc['MANDATORY']+str(rowNum)].value)
-        self.sOutput[self.fieldTemp['Description']+str(self.outputRowNum)] = self.ws[self.fieldSrc['LONG_DESC']+str(rowNum)].value
+        self.sOutput[self.fieldTemp['Description']+str(self.outputRowNum)] = self.ws[self.fieldSrc['SHORT_DESC']+str(rowNum)].value
         self.sOutput[self.fieldTemp['Is Primary Key']+str(self.outputRowNum)] = self.convertToCommonTerm(self.ws[self.fieldSrc['KEY_FLAG']+str(rowNum)].value)
         self.sOutput[self.fieldTemp['Number of Fractional Digits']+str(self.outputRowNum)] = self.ws[self.fieldSrc['DATA_DECIMALS']+str(rowNum)].value
         self.sOutput[self.fieldTemp['Size']+str(self.outputRowNum)] = self.ws[self.fieldSrc['DATA_LENGTH']+str(rowNum)].value
