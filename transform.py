@@ -1,4 +1,5 @@
 from openpyxl import load_workbook
+import sys, os
 
 class SapDataParser:
     #TODO calculate this
@@ -9,8 +10,7 @@ class SapDataParser:
     sourceFileName = ''
     outputFileName = 'output.xlsx'
     hasInfoArea = False
-    hasTable = False
-    
+    hasTable = False 
     domain = 'SAFYR SAP Test'
     community = 'Technical Metadata Community'
     domainType = 'Physical Data Dictionary'
@@ -19,11 +19,17 @@ class SapDataParser:
         self.sourceFileName = input
         self.wb = load_workbook(filename = input)
         self.ws = self.wb.active
+        self.resetOutputFile(output)
         self.outputFileName = output
         self.output = load_workbook(output)
         self.sOutput = self.output.active
         self.buildFieldMap()
         self.buildHeaders()
+    def resetOutputFile(self,fileName = 'output.xlsx'):
+        pathName = '.\\emptyOutput\\' + fileName
+        destination = '.\\'
+        os.system('del {d}\{fn}'.format(d=destination,fn=fileName))
+        os.system('copy {pn} {d}"'.format(pn=pathName,d=destination))
     def buildHeaders(self):    
         for k,v in self.fieldTemp.items():
             self.sOutput[v+'1'] = k
@@ -53,9 +59,6 @@ class SapDataParser:
         self.fieldTemp={}
         for col in ts.iter_cols():
             self.fieldTemp[col[0].value] = col[0].column
-            #print(self.fieldTemp[col[0].column])
-        
-        #print(self.fieldTemp)
             
     def start(self, startingRow = 2, limit = 0):
         print('Starting transformation')
@@ -63,11 +66,9 @@ class SapDataParser:
         temp = limit
         if temp >0:
             self.upperRange = limit
-        
         while rowNum < self.upperRange:
             self.processRow(rowNum)
             rowNum+=1
-        
         print('Complete! Saving File...')
         self.output.save(self.outputFileName)
         print('Done')
@@ -83,7 +84,6 @@ class SapDataParser:
             self.createNewInfoArea(rowNum)
             self.createNewInfoArea(rowNum,isChild=True)
             self.hasInfoArea = True
-        #elif data != self.currentInfoArea and data != '':
             
         #check for change in table
         data = self.ws[self.fieldSrc['DD_TABLENAME']+str(rowNum)].value
@@ -110,7 +110,6 @@ class SapDataParser:
 
            
     def createNewTable(self,rowNum):
-        #'''
         self.sOutput[self.fieldTemp['Name']+str(self.outputRowNum)] = self.ws[self.fieldSrc['DD_TABLENAME']+str(rowNum)].value
         self.sOutput[self.fieldTemp['Status']+str(self.outputRowNum)] = 'Candidate'
         self.sOutput[self.fieldTemp['Type']+str(self.outputRowNum)] = 'Table'
@@ -128,7 +127,7 @@ class SapDataParser:
             self.sOutput[self.fieldTemp['is captured in [Info Area] > Community']+str(self.outputRowNum)] = self.community
             self.sOutput[self.fieldTemp['is captured in [Info Area] > Domain Type']+str(self.outputRowNum)] = self.domainType
             self.sOutput[self.fieldTemp['is captured in [Info Area] > Domain']+str(self.outputRowNum)] = self.domain
-        #'''
+        
         self.outputRowNum +=1
      
     def createNewColumn(self,rowNum):
