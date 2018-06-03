@@ -75,7 +75,8 @@ class SapDataParser:
         print('Current info area={info}'.format(info=self.currentInfoArea))
         #check for change in info area
         data = self.ws[self.fieldSrc['Child']+str(rowNum)].value
-        if data == '': #initial state
+        data = str(data)
+        if data == '' or data is None: #initial state or no info area
             self.hasInfoArea = False
         elif data != self.currentInfoArea: #not equal to current info area, change detected
             self.currentInfoArea = data
@@ -86,28 +87,35 @@ class SapDataParser:
             
         #check for change in table
         data = self.ws[self.fieldSrc['DD_TABLENAME']+str(rowNum)].value
-        #print(self.ws[self.fieldSrc['DD_TABLENAME']+str(rowNum)])
-        #print('DATA = {d}'.format(d=data))
-        if data == '':
+        data = str(data)
+        print('TABLE = '+data)
+        if data == '' or data is None: #initial state or no table
+            print('No more of this table exists')
             self.hasTable = False
-        if data !=self.currentTable: #mismatch detected
-            #print('creating new table:{d}'.format(d=data))
+        elif data !=self.currentTable: #mismatch detected
+            self.hasTable = True
             self.currentTable = data
             self.createNewTable(rowNum)
         
         #build columns
-        if data != '': #there is no table to put columns in
+        if data != '' and data is not None and self.hasTable and self.ws[self.fieldSrc['DD_FIELDNAME']+str(rowNum)].value is not None: #columns must be put in a table
+            print('Creating column')
             self.createNewColumn(rowNum)
+        '''
+            print("Creating column but not checking if has table yet")
+            if self.hasTable and self.ws[self.fieldSrc['DD_FIELDNAME']+str(rowNum)].value is not None:
+                print('Creating column')
+                self.createNewColumn(rowNum)
+        '''
 
            
     def createNewTable(self,rowNum):
-        self.hasTable = True
         #'''
         self.sOutput[self.fieldTemp['Name']+str(self.outputRowNum)] = self.ws[self.fieldSrc['DD_TABLENAME']+str(rowNum)].value
         self.sOutput[self.fieldTemp['Status']+str(self.outputRowNum)] = 'Candidate'
         self.sOutput[self.fieldTemp['Type']+str(self.outputRowNum)] = 'Table'
         self.sOutput[self.fieldTemp['Domain']+str(self.outputRowNum)] = self.domain
-        self.sOutput[self.fieldTemp['Community']+str(self.outputRowNum)] = self.domain
+        self.sOutput[self.fieldTemp['Community']+str(self.outputRowNum)] = self.community
         self.sOutput[self.fieldTemp['Domain Type']+str(self.outputRowNum)] = self.domainType
         
         self.sOutput[self.fieldTemp['Table Type']+str(self.outputRowNum)] = self.ws[self.fieldSrc['DD_TABLETYPE']+str(rowNum)].value
@@ -153,7 +161,7 @@ class SapDataParser:
         self.sOutput[self.fieldTemp['Status']+str(self.outputRowNum)] = 'Candidate'
         self.sOutput[self.fieldTemp['Type']+str(self.outputRowNum)] = 'Info Area'
         self.sOutput[self.fieldTemp['Domain']+str(self.outputRowNum)] = self.domain
-        self.sOutput[self.fieldTemp['Community']+str(self.outputRowNum)] = self.domain
+        self.sOutput[self.fieldTemp['Community']+str(self.outputRowNum)] = self.community
         self.sOutput[self.fieldTemp['Domain Type']+str(self.outputRowNum)] = self.domainType
 
         if isChild:
@@ -166,16 +174,16 @@ class SapDataParser:
             self.sOutput[self.fieldTemp['is a child of [Info Area] > Domain Type']+str(self.outputRowNum)] = self.domainType
             self.sOutput[self.fieldTemp['is a child of [Info Area] > Domain']+str(self.outputRowNum)] = self.domain
             
-            #relation to table
-            data = self.sOutput[self.fieldTemp['captures [Table] > Table']+str(self.outputRowNum)]
-            if data != '':
-                self.sOutput[self.fieldTemp['captures [Table] > Table']+str(self.outputRowNum)] = self.ws[self.fieldSrc['DD_TABLETYPE']+str(rowNum)].value
+            #relation to table #not needed since table relates to info area
+            '''
+            if self.hasTable:
+                print('This info area [{a}] has a table [{b}]'.format(a=self.ws[self.fieldSrc['Child']+str(rowNum)].value,b=self.ws[self.fieldSrc['DD_TABLENAME']+str(rowNum)].value))
+                self.sOutput[self.fieldTemp['captures [Table] > Table']+str(self.outputRowNum)] = self.ws[self.fieldSrc['DD_TABLENAME']+str(rowNum)].value
                 self.sOutput[self.fieldTemp['captures [Table] > Type']+str(self.outputRowNum)] = 'Table'
                 self.sOutput[self.fieldTemp['captures [Table] > Community']+str(self.outputRowNum)] = self.community
                 self.sOutput[self.fieldTemp['captures [Table] > Domain Type']+str(self.outputRowNum)] = self.domainType
                 self.sOutput[self.fieldTemp['captures [Table] > Domain']+str(self.outputRowNum)] = self.domain
-            else:
-                self.has
+            '''
         else:
             self.sOutput[self.fieldTemp['Name']+str(self.outputRowNum)] = self.ws[self.fieldSrc['Parent']+str(rowNum)].value
         self.outputRowNum +=1
