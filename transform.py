@@ -35,12 +35,14 @@ class SapDataParser:
         
         self.buildFieldMap()
         self.buildHeaders()
-    def resetOutputFile(self,fileName = 'output'):
-        for i in range(0,3)
+    def resetOutputFile(self, fileName1 = 'output1.xlsx', fileName2 = 'output2.xlsx', fileName3):
+        fileName[0] = 
         pathName = '.\\emptyOutput\\' + fileName
         destination = '.\\'
-        os.system('del {d}\{fn}'.format(d=destination,fn=fileName))
-        os.system('copy {pn} {d}"'.format(pn=pathName,d=destination))
+        for i in range(0,3)
+            
+            os.system('del {d}\{fn}'.format(d=destination,fn=fileName))
+            os.system('copy {pn} {d}"'.format(pn=pathName,d=destination))
     def buildHeaders(self):    
         for k,v in self.fieldTemp.items():
             self.sOutput[v+'1'] = k
