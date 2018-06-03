@@ -121,7 +121,7 @@ class SapDataParser:
         self.sOutput[self.fieldTemp['Description']+str(self.outputRowNum)] = self.ws[self.fieldSrc['LONG_DESC']+str(rowNum)].value
         
         #relation (sometimes has no info area)
-        if self.hasInfoArea:
+        if self.hasInfoArea and self.currentInfoArea !='' and self.currentInfoArea is not None:
             self.sOutput[self.fieldTemp['is captured in [Info Area] > Info Area']+str(self.outputRowNum)] = self.ws[self.fieldSrc['Child']+str(rowNum)].value
             self.sOutput[self.fieldTemp['is captured in [Info Area] > Type']+str(self.outputRowNum)] = 'Info Area'
             self.sOutput[self.fieldTemp['is captured in [Info Area] > Community']+str(self.outputRowNum)] = self.community
