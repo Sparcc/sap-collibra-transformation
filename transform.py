@@ -6,7 +6,9 @@ class SapDataParser:
     upperRange = 0
     currentInfoArea = ''
     currentTable = ''
-    outputRowNum = 2
+    outputRowNumInfoArea = 2
+    outputRowNumTable = 2
+    outputRowNumColumn = 2
     sourceFileName = ''
     outputFileName = 'output.xlsx'
     hasInfoArea = False
@@ -14,18 +16,27 @@ class SapDataParser:
     domain = 'SAFYR SAP Test'
     community = 'Technical Metadata Community'
     domainType = 'Physical Data Dictionary'
-    def __init__(self,input, output):
+    def __init__(self,input, output1, output2, output3):
         print('Loading Excel Files')
         self.sourceFileName = input
         self.wb = load_workbook(filename = input)
         self.ws = self.wb.active
         self.resetOutputFile(output)
         self.outputFileName = output
-        self.output = load_workbook(output)
-        self.sOutput = self.output.active
+        
+        self.outputIO = load_workbook(output1)
+        self.sOutputIO = self.outputIO.active
+        
+        self.outputT = load_workbook(output2)
+        self.sOutputT = self.outputT.active
+        
+        self.outputC = load_workbook(output3)
+        self.sOutputC = self.outputC.active
+        
         self.buildFieldMap()
         self.buildHeaders()
-    def resetOutputFile(self,fileName = 'output.xlsx'):
+    def resetOutputFile(self,fileName = 'output'):
+        for i in range(0,3)
         pathName = '.\\emptyOutput\\' + fileName
         destination = '.\\'
         os.system('del {d}\{fn}'.format(d=destination,fn=fileName))
@@ -54,11 +65,25 @@ class SapDataParser:
         self.fieldSrc['DATA_DECIMALS'] = 'L'
         self.fieldSrc['KEY_FLAG'] = 'M'
         
-        tb = load_workbook(filename = 'template.xlsx')
-        ts = tb.active
+        tb1 = load_workbook(filename = 'info-area-template.xlsx')
+        ts1 = tb1.active
         self.fieldTemp={}
-        for col in ts.iter_cols():
-            self.fieldTemp[col[0].value] = col[0].column
+        for col in ts1.iter_cols():
+            self.fieldTemp1[col[0].value] = col[0].column
+            
+        tb2 = load_workbook(filename = 'table-template.xlsx')
+        ts2 = tb2.active
+        self.fieldTemp={}
+        for col in ts2.iter_cols():
+            self.fieldTemp2[col[0].value] = col[0].column
+            
+        tb3 = load_workbook(filename = 'column-template.xlsx')
+        ts3 = tb3.active
+        self.fieldTemp={}
+        for col in ts3.iter_cols():
+            self.fieldTemp3[col[0].value] = col[0].column
+            
+        
             
     def start(self, startingRow = 2, limit = 0):
         print('Starting transformation')
@@ -110,25 +135,25 @@ class SapDataParser:
 
            
     def createNewTable(self,rowNum):
-        self.sOutput[self.fieldTemp['Name']+str(self.outputRowNum)] = self.ws[self.fieldSrc['DD_TABLENAME']+str(rowNum)].value
-        self.sOutput[self.fieldTemp['Status']+str(self.outputRowNum)] = 'Candidate'
-        self.sOutput[self.fieldTemp['Type']+str(self.outputRowNum)] = 'Table'
-        self.sOutput[self.fieldTemp['Domain']+str(self.outputRowNum)] = self.domain
-        self.sOutput[self.fieldTemp['Community']+str(self.outputRowNum)] = self.community
-        self.sOutput[self.fieldTemp['Domain Type']+str(self.outputRowNum)] = self.domainType
+        self.sOutput2[self.fieldTempTable['Name']+str(self.outputRowNumTable)] = self.ws[self.fieldSrc['DD_TABLENAME']+str(rowNum)].value
+        self.sOutput2[self.fieldTempTable['Status']+str(self.outputRowNumTable)] = 'Candidate'
+        self.sOutput2[self.fieldTempTable['Type']+str(self.outputRowNumTable)] = 'Table'
+        self.sOutput2[self.fieldTempTable['Domain']+str(self.outputRowNumTable)] = self.domain
+        self.sOutput2[self.fieldTempTable['Community']+str(self.outputRowNumTable)] = self.community
+        self.sOutput2[self.fieldTempTable['Domain Type']+str(self.outputRowNumTable)] = self.domainType
         
-        self.sOutput[self.fieldTemp['Table Type']+str(self.outputRowNum)] = self.ws[self.fieldSrc['DD_TABLETYPE']+str(rowNum)].value
-        self.sOutput[self.fieldTemp['Description']+str(self.outputRowNum)] = self.ws[self.fieldSrc['LONG_DESC']+str(rowNum)].value
+        self.sOutput[self.fieldTemp['Table Type']+str(self.outputRowNumTable)] = self.ws[self.fieldSrc['DD_TABLETYPE']+str(rowNum)].value
+        self.sOutput[self.fieldTemp['Description']+str(self.outputRowNumTable)] = self.ws[self.fieldSrc['LONG_DESC']+str(rowNum)].value
         
         #relation (sometimes has no info area)
         if self.hasInfoArea:
-            self.sOutput[self.fieldTemp['is captured in [Info Area] > Info Area']+str(self.outputRowNum)] = self.ws[self.fieldSrc['Child']+str(rowNum)].value
-            self.sOutput[self.fieldTemp['is captured in [Info Area] > Type']+str(self.outputRowNum)] = 'Info Area'
-            self.sOutput[self.fieldTemp['is captured in [Info Area] > Community']+str(self.outputRowNum)] = self.community
-            self.sOutput[self.fieldTemp['is captured in [Info Area] > Domain Type']+str(self.outputRowNum)] = self.domainType
-            self.sOutput[self.fieldTemp['is captured in [Info Area] > Domain']+str(self.outputRowNum)] = self.domain
+            self.sOutput2[self.fieldTempTable['is captured in [Info Area] > Info Area']+str(self.outputRowNumTable)] = self.ws[self.fieldSrc['Child']+str(rowNum)].value
+            self.sOutput2[self.fieldTempTable['is captured in [Info Area] > Type']+str(self.outputRowNumTable)] = 'Info Area'
+            self.sOutput2[self.fieldTempTable['is captured in [Info Area] > Community']+str(self.outputRowNumTable)] = self.community
+            self.sOutput2[self.fieldTempTable['is captured in [Info Area] > Domain Type']+str(self.outputRowNumTable)] = self.domainType
+            self.sOutput2[self.fieldTempTable['is captured in [Info Area] > Domain']+str(self.outputRowNumTable)] = self.domain
         
-        self.outputRowNum +=1
+        self.outputRowNumTable +=1
      
     def createNewColumn(self,rowNum):
         self.sOutput[self.fieldTemp['Name']+str(self.outputRowNum)] = self.ws[self.fieldSrc['DD_FIELDNAME']+str(rowNum)].value
