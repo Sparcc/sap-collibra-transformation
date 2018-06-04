@@ -120,8 +120,8 @@ class SapDataParser:
         self.sOutput[self.fieldTemp['Domain Type']+str(self.outputRowNum)] = self.domainType
 
         if isChild:
-            self.sOutput[self.fieldTemp['Name']+str(self.outputRowNum)] = self.ws[self.fieldSrc['Parent']+str(rowNum)].value + '::' + self.ws[self.fieldSrc['Child']+str(rowNum)].value
-        
+            self.sOutput[self.fieldTemp['Name']+str(self.outputRowNum)] = self.ws[self.fieldSrc['Child']+str(rowNum)].value
+            #self.ws[self.fieldSrc['Parent']+str(rowNum)].value + '::' + 
             #relation to parent
             self.sOutput[self.fieldTemp['is a child of [Info Area] > Info Area']+str(self.outputRowNum)] = self.ws[self.fieldSrc['Parent']+str(rowNum)].value
             self.sOutput[self.fieldTemp['is a child of [Info Area] > Type']+str(self.outputRowNum)] = 'Info Area'
