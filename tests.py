@@ -4,6 +4,7 @@ import sys, os
 sys.path.append(os.getcwd())
 from transform import *
 
+#crappiest unit tests you've probably ever seen #notevenadev
 class TestTransform(unittest.TestCase):
     def setUp(self):
         self.t = SapDataParser('data.xlsx','output.xlsx')

@@ -14,6 +14,7 @@ class SapDataParser:
     domain = 'SAFYR SAP Test'
     community = 'Technical Metadata Community'
     domainType = 'Physical Data Dictionary'
+    
     def __init__(self,input, output):
         print('Loading Excel Files')
         self.sourceFileName = input
@@ -25,17 +26,21 @@ class SapDataParser:
         self.sOutput = self.output.active
         self.buildFieldMap()
         self.buildHeaders()
+        
     def resetOutputFile(self,fileName = 'output.xlsx'):
         pathName = '.\\emptyOutput\\' + fileName
         destination = '.\\'
         os.system('del {d}\{fn}'.format(d=destination,fn=fileName))
         os.system('copy {pn} {d}"'.format(pn=pathName,d=destination))
+        
     def buildHeaders(self):    
         for k,v in self.fieldTemp.items():
             self.sOutput[v+'1'] = k
+            
     def setDataLength(self, upperRange = 49646):
         #TODO: Calculate upperRange
         self.upperRange = upperRange + 1
+        
     def buildFieldMap(self):
         print('Building Map')
         #src fields
@@ -72,12 +77,12 @@ class SapDataParser:
         print('Complete! Saving File...')
         self.output.save(self.outputFileName)
         print('Done')
+        
     def processRow(self,rowNum):
         print('Current Row is: '+str(rowNum))
         
         #info area check
         data = self.ws[self.fieldSrc['Child']+str(rowNum)].value
-
         if (data is None): #initial state or no info area
             self.hasInfoArea = False
         else:
@@ -102,16 +107,13 @@ class SapDataParser:
             self.hasTable = True
             self.currentTable = data
             self.createNewTable(rowNum)
-        
-        data = self.ws[self.fieldSrc['DD_FIELDNAME']+str(rowNum)].value
-        
         #build columns in table
+        data = self.ws[self.fieldSrc['DD_FIELDNAME']+str(rowNum)].value
         if self.hasTable == True: 
             if data is not None: #columns must be put in a table
                 print('Creating column {col} under table: {tab}'.format(col='data',tab=self.ws[self.fieldSrc['DD_TABLENAME']+str(rowNum)].value))
                 self.createNewColumn(rowNum)
-        #'''
-    
+
     def createNewInfoArea(self,rowNum, isChild = False):
         self.sOutput[self.fieldTemp['Status']+str(self.outputRowNum)] = 'Candidate'
         self.sOutput[self.fieldTemp['Type']+str(self.outputRowNum)] = 'Info Area'
@@ -121,7 +123,7 @@ class SapDataParser:
 
         if isChild:
             self.sOutput[self.fieldTemp['Name']+str(self.outputRowNum)] = self.ws[self.fieldSrc['Child']+str(rowNum)].value
-            #self.ws[self.fieldSrc['Parent']+str(rowNum)].value + '::' + 
+
             #relation to parent
             self.sOutput[self.fieldTemp['is a child of [Info Area] > Info Area']+str(self.outputRowNum)] = self.ws[self.fieldSrc['Parent']+str(rowNum)].value
             self.sOutput[self.fieldTemp['is a child of [Info Area] > Type']+str(self.outputRowNum)] = 'Info Area'
@@ -146,7 +148,6 @@ class SapDataParser:
         #relation (sometimes has no info area)
         if self.hasInfoArea and self.currentInfoArea !='' and self.currentInfoArea is not None:
             self.sOutput[self.fieldTemp['Name']+str(self.outputRowNum)] = self.ws[self.fieldSrc['DD_TABLENAME']+str(rowNum)].value
-            #self.ws[self.fieldSrc['Child']+str(rowNum)].value + '::' + 
             self.sOutput[self.fieldTemp['is captured in [Info Area] > Info Area']+str(self.outputRowNum)] = self.ws[self.fieldSrc['Child']+str(rowNum)].value
             self.sOutput[self.fieldTemp['is captured in [Info Area] > Type']+str(self.outputRowNum)] = 'Info Area'
             self.sOutput[self.fieldTemp['is captured in [Info Area] > Community']+str(self.outputRowNum)] = self.community
@@ -158,10 +159,7 @@ class SapDataParser:
         self.outputRowNum +=1
      
     def createNewColumn(self,rowNum):
-        if self.hasInfoArea and self.currentInfoArea !='' and self.currentInfoArea is not None:
-            self.sOutput[self.fieldTemp['Name']+str(self.outputRowNum)] =  self.ws[self.fieldSrc['Child']+str(rowNum)].value + '::' + self.ws[self.fieldSrc['DD_TABLENAME']+str(rowNum)].value + '::' + self.ws[self.fieldSrc['DD_FIELDNAME']+str(rowNum)].value
-        else:
-            self.sOutput[self.fieldTemp['Name']+str(self.outputRowNum)] = self.ws[self.fieldSrc['DD_TABLENAME']+str(rowNum)].value + '::' + self.ws[self.fieldSrc['DD_FIELDNAME']+str(rowNum)].value
+        self.sOutput[self.fieldTemp['Name']+str(self.outputRowNum)] = self.ws[self.fieldSrc['DD_TABLENAME']+str(rowNum)].value + '::' + self.ws[self.fieldSrc['DD_FIELDNAME']+str(rowNum)].value    
         self.sOutput[self.fieldTemp['Status']+str(self.outputRowNum)] = 'Candidate'
         self.sOutput[self.fieldTemp['Type']+str(self.outputRowNum)] = 'Column'
         self.sOutput[self.fieldTemp['Domain']+str(self.outputRowNum)] = self.domain
