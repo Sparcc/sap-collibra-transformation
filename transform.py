@@ -75,52 +75,39 @@ class SapDataParser:
     def processRow(self,rowNum):
         print('Current Row is: '+str(rowNum))
         
-        #check for change in info area
+        #info area check
         data = self.ws[self.fieldSrc['Child']+str(rowNum)].value
-        '''
-        print(data)
-        if data is None:
-            print('lmaooooooooooooooooooooo')
-        '''
-        #data = str(data)
-        #'''
-        #print('Info area='+data)
-        if (data == '') or (data is None): #initial state or no info area
+
+        if (data is None): #initial state or no info area
             self.hasInfoArea = False
-        elif (data != self.currentInfoArea) and (self.hasInfoArea == True): #not equal to current info area, change detected
+        else:
+            self.hasInfoArea = True
+        
+        if (data != self.currentInfoArea) and (self.hasInfoArea == True): #not equal to current info area, change detected
             print('Creating new info area {info} with parent {par}'.format(info=data,par=self.ws[self.fieldSrc['Parent']+str(rowNum)].value))
             self.currentInfoArea = data
             self.createNewInfoArea(rowNum)
             self.createNewInfoArea(rowNum,isChild=True)
             self.hasInfoArea = True 
-        else:
-            self.hasInfoArea = False
-        '''
-            if (data is not None) and (data != ''): #and (self.ws[self.fieldSrc['Parent']+str(rowNum)].value is not None):
-                print('Creating new info area {info} with parent {par}'.format(info=data,par=self.ws[self.fieldSrc['Parent']+str(rowNum)].value))
-                self.currentInfoArea = data
-                self.createNewInfoArea(rowNum)
-                self.createNewInfoArea(rowNum,isChild=True)
-                self.hasInfoArea = True 
-            else:
-                self.hasInfoArea = False
-        '''
             
-        #check for change in table
+        #table check
         data = self.ws[self.fieldSrc['DD_TABLENAME']+str(rowNum)].value
-        #data = str(data)
-        #print('TABLE = '+data)
-        if (data == '') or (data is None): #initial state or no table
+        if (data is None): #initial state or no table
             print('No more of this table exists')
             self.hasTable = False
-        elif data !=self.currentTable and len(data)>0: #mismatch detected
+        else:
+            self.hasTable = True
+            
+        if (data !=self.currentTable) and (self.hasTable == True): #mismatch detected
             self.hasTable = True
             self.currentTable = data
             self.createNewTable(rowNum)
         
-        #build columns
-        if data != '' and (data is not None) and self.hasTable: 
-            if self.ws[self.fieldSrc['DD_FIELDNAME']+str(rowNum)].value is not None: #columns must be put in a table
+        data = self.ws[self.fieldSrc['DD_FIELDNAME']+str(rowNum)].value
+        
+        #build columns in table
+        if self.hasTable == True: 
+            if data is not None: #columns must be put in a table
                 print('Creating column {col} under table: {tab}'.format(col='data',tab=self.ws[self.fieldSrc['DD_TABLENAME']+str(rowNum)].value))
                 self.createNewColumn(rowNum)
         #'''
