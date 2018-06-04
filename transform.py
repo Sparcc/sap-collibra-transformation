@@ -145,7 +145,8 @@ class SapDataParser:
         
         #relation (sometimes has no info area)
         if self.hasInfoArea and self.currentInfoArea !='' and self.currentInfoArea is not None:
-            self.sOutput[self.fieldTemp['Name']+str(self.outputRowNum)] = self.ws[self.fieldSrc['Child']+str(rowNum)].value + '::' + self.ws[self.fieldSrc['DD_TABLENAME']+str(rowNum)].value
+            self.sOutput[self.fieldTemp['Name']+str(self.outputRowNum)] = self.ws[self.fieldSrc['DD_TABLENAME']+str(rowNum)].value
+            #self.ws[self.fieldSrc['Child']+str(rowNum)].value + '::' + 
             self.sOutput[self.fieldTemp['is captured in [Info Area] > Info Area']+str(self.outputRowNum)] = self.ws[self.fieldSrc['Child']+str(rowNum)].value
             self.sOutput[self.fieldTemp['is captured in [Info Area] > Type']+str(self.outputRowNum)] = 'Info Area'
             self.sOutput[self.fieldTemp['is captured in [Info Area] > Community']+str(self.outputRowNum)] = self.community
