@@ -4,7 +4,6 @@ import sys, os
 sys.path.append(os.getcwd())
 from transform import *
 
-#crappiest unit tests you've probably ever seen #notevenadev
 class TestTransform(unittest.TestCase):
     def setUp(self):
         self.t = SapDataParser('data.xlsx','output.xlsx')
@@ -17,6 +16,6 @@ class TestTransform(unittest.TestCase):
     '''
     
     def testTransformData(self):
-        self.t.start(limit = 49647)#limit = 49647     755
+        self.t.start(limit = 755)#limit = 49647     755
 if __name__ == '__main__':
     unittest.main()
